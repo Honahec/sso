@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import re_path, include
+from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from sso_auth.views import UserAuthViewSet, UserSettingsViewSet
 
@@ -24,6 +24,7 @@ router.register(r'user', UserAuthViewSet, basename='user')
 router.register(r'user-settings', UserSettingsViewSet, basename='user-settings')
 
 urlpatterns = [
-    re_path(r'django-admin/', admin.site.urls),
-    re_path(r'^', include(router.urls)),
+    path('django-admin/', admin.site.urls),
+    path('', include(router.urls)),
+    path('oauth/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]

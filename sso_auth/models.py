@@ -11,4 +11,5 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=True)
     permission = models.OneToOneField(Permission, on_delete=models.PROTECT, null=True, blank=True)
+    token_version = models.IntegerField(default=0)  # Field to track token version
     

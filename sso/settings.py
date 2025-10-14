@@ -28,6 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = [
     'localhost',
     '*.honahec.cc',
+    '127.0.0.1',
 ]
 
 
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'sso_auth',
+    'oauth2_provider',
 ]
 
 # Use custom user model defined in `sso_auth.User`

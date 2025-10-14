@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 # Create your views here.
 class UserAuthViewSet(ModelViewSet):
@@ -27,6 +28,7 @@ class UserAuthViewSet(ModelViewSet):
             user = User.objects.get(username=username)
             if user.check_password(password) and user.is_active:
                 refresh = RefreshToken.for_user(user)
+                refresh['ver'] = user.token_version
                 return Response({
                     'refresh': str(refresh),
                     'access': str(refresh.access_token),
@@ -46,12 +48,6 @@ class UserAuthViewSet(ModelViewSet):
     def register(self, request):
         serializer = UserAuthSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        if User.objects.filter(username=request.data.get('username')).exists():
-            return Response({'error': 'Username already exists'}, status=400)
-        
-        if User.objects.filter(email=request.data.get('email')).exists():
-            return Response({'error': 'Email already exists'}, status=400)
         
         from .models import Permission
         user_permission = Permission.objects.create()
@@ -65,11 +61,36 @@ class UserAuthViewSet(ModelViewSet):
         user.save()
 
         refresh = RefreshToken.for_user(user)
+        refresh['ver'] = user.token_version
         return Response({
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         })
     
+    @action(
+        detail=False,
+        methods=['post'],
+        url_path='logout',
+    )
+    def logout(self, request):
+        try:
+            refresh_token = request.data.get('refresh')
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            user = request.user
+            user.token_version += 1  # Increment token version to invalidate existing tokens
+            user.save()
+            return Response({'status': 'Logged out successfully'})
+        except Exception as e:
+            return Response({'error': 'Invalid token'}, status=400)
+    
+class CustomJWTAuthentication(JWTAuthentication):
+    def get_user(self, validated_token):
+        user = super().get_user(validated_token)
+        if validated_token['ver'] != user.token_version:
+            return Response({'error': 'Token version mismatch'}, status=400)
+        return user
+
 class UserSettingsViewSet(GenericViewSet):
     permission_classes = [IsAuthenticated]
     
@@ -79,24 +100,33 @@ class UserSettingsViewSet(GenericViewSet):
         url_path='info',
     )
     def get_info(self, request):
-        serializer = UserSettingsSerializer(request.user)
-        return Response(serializer.data)
-    
+        user = CustomJWTAuthentication().get_user(request.auth)
+        try:
+            serializer = UserSettingsSerializer(user)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({'error': 'Invalid Token'}, status=400)
+
     @action(
         detail=False,
         methods=['post'],
         url_path='change-password',
     )
     def change_password(self, request):
-        old_password = request.data.get('old_password')
-        new_password = request.data.get('new_password')
-        
-        if not request.user.check_password(old_password):
-            return Response({'error': 'Old password is incorrect'}, status=400)
-        
-        request.user.set_password(new_password)
-        request.user.save()
-        return Response({'status': 'Password changed successfully'})
+        user = CustomJWTAuthentication().get_user(request.auth)
+        try:
+            serialzer = UserSettingsSerializer(user)
+            old_password = request.data.get('old_password')
+            new_password = request.data.get('new_password')
+            
+            if not user.check_password(old_password):
+                return Response({'error': 'Old password is incorrect'}, status=400)
+            
+            user.set_password(new_password)
+            user.save()
+            return Response({'status': 'Password changed successfully'})
+        except Exception as e:
+            return Response({'error': 'Invalid Token'}, status=400)
     
     @action(
         detail=False,
@@ -104,11 +134,16 @@ class UserSettingsViewSet(GenericViewSet):
         url_path='change-email',
     )
     def change_email(self, request):
-        new_email = request.data.get('new_email')
+        user = CustomJWTAuthentication().get_user(request.auth)
+        try:
+            serialzer = UserSettingsSerializer(user)
+            new_email = request.data.get('new_email')
         
-        if User.objects.filter(email=new_email).exists():
-            return Response({'error': 'Email already exists'}, status=400)
-        
-        request.user.email = new_email
-        request.user.save()
-        return Response({'status': 'Email changed successfully'})
+            if User.objects.filter(email=new_email).exists():
+                return Response({'error': 'Email already exists'}, status=400)
+            
+            user.email = new_email
+            user.save()
+            return Response({'status': 'Email changed successfully'})
+        except Exception as e:
+            return Response({'error': 'Invalid Token'}, status=400)
