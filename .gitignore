@@ -1,5 +1,7 @@
 venv
 __pycache__
 
+*/migrations/*
 !__init__.py
-migrations/*
+
+*.sqlite3
