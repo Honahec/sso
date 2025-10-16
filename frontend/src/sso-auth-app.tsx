@@ -438,10 +438,6 @@ const AuthExperience: React.FC<{
           <List spacing={3}>
             <ListItem>
               <ListIcon as={CheckCircleIcon} color="green.200" />
-              Modern Chakra UI polished flows for authentication.
-            </ListItem>
-            <ListItem>
-              <ListIcon as={CheckCircleIcon} color="green.200" />
               Manage OAuth clients and authorized tokens with a few clicks.
             </ListItem>
             <ListItem>
@@ -896,11 +892,6 @@ const AuthApp: React.FC = () => {
         payload
       );
       storeSession(data);
-      setLoginFeedback({
-        type: "success",
-        title: "Welcome back",
-        message: "Login successful.",
-      });
       if (NEXT_URL) {
         window.location.assign(NEXT_URL);
         return;
@@ -932,11 +923,6 @@ const AuthApp: React.FC = () => {
         payload
       );
       storeSession(data);
-      setRegisterFeedback({
-        type: "success",
-        title: "Account created",
-        message: "Registration successful. You are now logged in.",
-      });
       if (NEXT_URL) {
         window.location.assign(NEXT_URL);
         return;
@@ -1033,11 +1019,6 @@ const AuthApp: React.FC = () => {
           refresh: tokens.refresh,
         });
       }
-      setSettingsFeedback({
-        type: "success",
-        title: "Signed out",
-        message: "You have been logged out.",
-      });
     } catch (error) {
       setSettingsFeedback({
         type: "error",
@@ -1067,40 +1048,6 @@ const AuthApp: React.FC = () => {
         showContinueCard={Boolean(nextUrl)}
         nextUrl={nextUrl}
       />
-    );
-  }
-
-  if (portalContext.isAuthenticated && !hasJwtSession) {
-    return (
-      <Container maxW="4xl" py={{ base: 10, md: 16 }}>
-        <Stack spacing={10}>
-          <Box
-            bgGradient="linear(to-r, purple.600, purple.400)"
-            color="white"
-            borderRadius="2xl"
-            shadow="xl"
-            p={{ base: 8, md: 12 }}
-          >
-            <VStack align="flex-start" spacing={4}>
-              <Heading size="xl">You are already signed in.</Heading>
-              <Text opacity={0.85} fontSize="lg">
-                To generate fresh JWT tokens and manage account settings, please
-                log in again below.
-              </Text>
-            </VStack>
-          </Box>
-          <AuthExperience
-            onLogin={handleLogin}
-            onRegister={handleRegister}
-            loginLoading={loginLoading}
-            registerLoading={registerLoading}
-            loginFeedback={loginFeedback}
-            registerFeedback={registerFeedback}
-            clearLoginFeedback={() => setLoginFeedback(null)}
-            clearRegisterFeedback={() => setRegisterFeedback(null)}
-          />
-        </Stack>
-      </Container>
     );
   }
 
