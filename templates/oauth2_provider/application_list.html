@@ -1,0 +1,24 @@
+{% extends "oauth2_provider/base.html" %}
+{% load i18n %}
+
+{% block oauth_page %}application_list{% endblock %}
+
+{% block react_context %}
+<script id="oauth-context" type="application/json">
+{
+  "title": "{% trans 'Your applications' %}",
+  "detailLabel": "{% trans 'View' %}",
+  "applications": [{% for application in applications %}{"id": "{{ application.pk }}", "name": "{{ application.name|escapejs }}", "detailUrl": "{% url 'oauth2_provider:detail' application.pk %}"}{% if not forloop.last %}, {% endif %}{% endfor %}],
+  "registerButton": {
+    "label": "{% trans 'New Application' %}",
+    "url": "{% url 'oauth2_provider:register' %}"
+  },
+  "emptyState": {
+    "message": "{% trans 'No applications defined' %}.",
+    "ctaLabel": "{% trans 'Click here' %}",
+    "ctaUrl": "{% url 'oauth2_provider:register' %}",
+    "ctaSuffix": "{% trans 'if you want to register a new one' %}"
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "oauth2_provider/base.html" %}
+{% load i18n %}
+
+{% block oauth_page %}logout_confirm{% endblock %}
+
+{% block react_context %}
+<script id="oauth-context" type="application/json">
+{
+  "hasError": {% if error %}true{% else %}false{% endif %},
+  "error": {% if error %}{"title": "Error: {{ error.error|escapejs }}", "description": "{{ error.description|escapejs }}"}{% else %}null{% endif %},
+  "applicationName": "{% if application %}{{ application.name|escapejs }}{% endif %}",
+  "csrfToken": "{{ csrf_token|escapejs }}",
+  "hiddenFields": [{% if form %}{% for field in form.hidden_fields %}{"name": "{{ field.html_name }}", "value": "{{ field.value|default_if_none:''|escapejs }}"}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}],
+  "fieldErrors": [{% if form %}{% for field_errors in form.errors.values %}{% for err in field_errors %}"{{ err|escapejs }}"{% if not forloop.last or not forloop.parentloop.last %}, {% endif %}{% endfor %}{% endfor %}{% endif %}],
+  "nonFieldErrors": [{% if form %}{% for err in form.non_field_errors %}"{{ err|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}],
+  "labels": {
+    "headingBase": "{% trans 'Confirm Logout' %}",
+    "cancel": "{% trans 'Cancel' %}",
+    "confirm": "{% trans 'Logout' %}"
+  }
+}
+</script>
+{% endblock %}

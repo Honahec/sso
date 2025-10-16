@@ -1,0 +1,25 @@
+{% extends "oauth2_provider/base.html" %}
+{% load i18n %}
+
+{% block oauth_page %}authorize{% endblock %}
+
+{% block react_context %}
+<script id="oauth-context" type="application/json">
+{
+  "applicationName": "{{ application.name|default:''|escapejs }}",
+  "permissionText": "{% trans 'Application requires the following permissions' %}",
+  "labels": {
+    "heading": "{% trans 'Authorize' %}",
+    "cancel": "{% trans 'Cancel' %}",
+    "authorize": "{% trans 'Authorize' %}"
+  },
+  "scopes": [{% for scope in scopes_descriptions %}"{{ scope|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+  "hiddenFields": [{% for field in form.hidden_fields %}{"name": "{{ field.html_name }}", "value": "{{ field.value|default_if_none:''|escapejs }}"}{% if not forloop.last %}, {% endif %}{% endfor %}],
+  "csrfToken": "{{ csrf_token|escapejs }}",
+  "fieldErrors": [{% for field_errors in form.errors.values %}{% for err in field_errors %}"{{ err|escapejs }}"{% if not forloop.last or not forloop.parentloop.last %}, {% endif %}{% endfor %}{% endfor %}],
+  "nonFieldErrors": [{% for err in form.non_field_errors %}"{{ err|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+  "errorResponse": {% if error %}{"title": "Error: {{ error.error|escapejs }}", "description": "{{ error.description|escapejs }}"}{% else %}null{% endif %},
+  "formAction": "{{ request.get_full_path|escapejs }}"
+}
+</script>
+{% endblock %}

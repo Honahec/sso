@@ -1,0 +1,15 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SSO Auth Portal</title>
+    <meta name="description" content="User authentication portal">
+</head>
+<body>
+<div id="sso-auth-root"></div>
+{{ portal_context|json_script:"sso-auth-context" }}
+<script type="module" src="{% static 'dist/sso-auth-app.js' %}"></script>
+</body>
+</html>

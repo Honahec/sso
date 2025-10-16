@@ -1,0 +1,27 @@
+{% extends "oauth2_provider/base.html" %}
+{% load i18n %}
+
+{% block oauth_page %}application_detail{% endblock %}
+
+{% block react_context %}
+<script id="oauth-context" type="application/json">
+{
+  "title": "{{ application.name|escapejs }}",
+  "fields": [
+    {"label": "{% trans 'Client id' %}", "value": "{{ application.client_id|escapejs }}", "type": "text"},
+    {"label": "{% trans 'Client secret' %}", "value": "{{ application.client_secret|escapejs }}", "type": "text"},
+    {"label": "{% trans 'Hash client secret' %}", "value": "{{ application.hash_client_secret|yesno:_('yes,no') }}", "type": "text"},
+    {"label": "{% trans 'Client type' %}", "value": "{{ application.client_type|escapejs }}", "type": "text"},
+    {"label": "{% trans 'Authorization Grant Type' %}", "value": "{{ application.authorization_grant_type|escapejs }}", "type": "text"},
+    {"label": "{% trans 'Redirect Uris' %}", "value": "{{ application.redirect_uris|escapejs }}", "type": "textarea"},
+    {"label": "{% trans 'Post Logout Redirect Uris' %}", "value": "{{ application.post_logout_redirect_uris|escapejs }}", "type": "textarea"},
+    {"label": "{% trans 'Allowed Origins' %}", "value": "{{ application.allowed_origins|escapejs }}", "type": "textarea"}
+  ],
+  "actions": {
+    "back": {"label": "{% trans 'Go Back' %}", "url": "{% url 'oauth2_provider:list' %}"},
+    "edit": {"label": "{% trans 'Edit' %}", "url": "{% url 'oauth2_provider:update' application.pk %}"},
+    "delete": {"label": "{% trans 'Delete' %}", "url": "{% url 'oauth2_provider:delete' application.pk %}"}
+  }
+}
+</script>
+{% endblock %}

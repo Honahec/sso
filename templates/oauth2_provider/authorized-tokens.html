@@ -1,0 +1,24 @@
+{% extends "oauth2_provider/base.html" %}
+{% load i18n %}
+
+{% block oauth_page %}authorized_tokens{% endblock %}
+
+{% block react_context %}
+<script id="oauth-context" type="application/json">
+{
+  "title": "{% trans 'Tokens' %}",
+  "revokeLabel": "{% trans 'Revoke' %}",
+  "tokens": [
+    {% for authorized_token in authorized_tokens %}
+    {
+      "id": "{{ authorized_token.pk }}",
+      "applicationName": "{{ authorized_token.application|escapejs }}",
+      "revokeUrl": "{% url 'oauth2_provider:authorized-token-delete' authorized_token.pk %}",
+      "scopes": [{% for scope_name, scope_description in authorized_token.scopes.items %}{"name": "{{ scope_name|escapejs }}", "description": "{{ scope_description|escapejs }}"}{% if not forloop.last %}, {% endif %}{% endfor %}]
+    }{% if not forloop.last %}, {% endif %}
+    {% endfor %}
+  ],
+  "emptyMessage": "{% trans 'There are no authorized tokens yet.' %}"
+}
+</script>
+{% endblock %}

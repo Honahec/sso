@@ -1,0 +1,17 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}OAuth{% endblock %}</title>
+    <meta name="description" content="">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+<div id="oauth-root" data-page="{% block oauth_page %}{% endblock %}"></div>
+{% block react_context %}{% endblock %}
+<script type="module" src="{% static 'dist/oauth-app.js' %}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

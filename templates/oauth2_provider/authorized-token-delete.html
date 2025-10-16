@@ -1,0 +1,15 @@
+{% extends "oauth2_provider/base.html" %}
+{% load i18n %}
+
+{% block oauth_page %}authorized_token_delete{% endblock %}
+
+{% block react_context %}
+<script id="oauth-context" type="application/json">
+{
+  "message": "{% trans 'Are you sure you want to delete this token?' %}",
+  "formAction": "",
+  "csrfToken": "{{ csrf_token|escapejs }}",
+  "submitLabel": "{% trans 'Delete' %}"
+}
+</script>
+{% endblock %}

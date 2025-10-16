@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from sso_auth.views import UserAuthViewSet, UserSettingsViewSet
+from sso_auth.views import UserAuthViewSet, UserSettingsViewSet, PortalView
 
 router = DefaultRouter()
 router.register(r'user', UserAuthViewSet, basename='user')
@@ -27,4 +27,5 @@ urlpatterns = [
     path('django-admin/', admin.site.urls),
     path('', include(router.urls)),
     path('oauth/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    path('portal/', PortalView.as_view(), name='sso_auth_portal'),
 ]

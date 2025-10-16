@@ -1,0 +1,27 @@
+{% extends "oauth2_provider/base.html" %}
+{% load i18n %}
+
+{% block oauth_page %}application_form{% endblock %}
+
+{% block react_context %}
+<script id="oauth-context" type="application/json">
+{
+  "title": "{% block app_form_title %}{% blocktrans with name=application.name %}Edit application {{ name }}{% endblocktrans %}{% endblock %}",
+  "formAction": "{% block app_form_action %}{% url 'oauth2_provider:update' application.pk %}{% endblock %}",
+  "backUrl": "{% block app_form_back_url %}{% url 'oauth2_provider:detail' application.pk %}{% endblock %}",
+  "submitLabel": "{% block app_form_submit_label %}{% trans 'Save' %}{% endblock %}",
+  "cancelLabel": "{% block app_form_cancel_label %}{% trans 'Go Back' %}{% endblock %}",
+  "csrfToken": "{{ csrf_token|escapejs }}",
+  "hiddenFields": [{% for field in form.hidden_fields %}{"name": "{{ field.html_name }}", "value": "{{ field.value|default_if_none:''|escapejs }}"}{% if not forloop.last %}, {% endif %}{% endfor %}],
+  "fields": [{% for field in form.visible_fields %}{
+      "name": "{{ field.html_name }}",
+      "label": "{{ field.label|escapejs }}",
+      "widget": "{{ field.as_widget|escapejs }}",
+      "helpText": "{{ field.help_text|default_if_none:''|escapejs }}",
+      "errors": [{% for err in field.errors %}"{{ err|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+      "required": {{ field.field.required|yesno:"true,false" }}
+  }{% if not forloop.last %}, {% endif %}{% endfor %}],
+  "nonFieldErrors": [{% for err in form.non_field_errors %}"{{ err|escapejs }}"{% if not forloop.last %}, {% endif %}{% endfor %}]
+}
+</script>
+{% endblock %}
