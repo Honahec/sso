@@ -15,17 +15,23 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
+from django.views.generic import RedirectView
 from rest_framework.routers import DefaultRouter
 from sso_auth.views import UserAuthViewSet, UserSettingsViewSet, PortalView
+from sso_admin.views import AdminPortalView, AdminUserViewSet
 
 router = DefaultRouter()
+router.include_root_view = False
 router.register(r'user', UserAuthViewSet, basename='user')
 router.register(r'user-settings', UserSettingsViewSet, basename='user-settings')
+router.register(r'admin/users', AdminUserViewSet, basename='sso-admin-users')
 
 urlpatterns = [
     path('django-admin/', admin.site.urls),
+    path('', RedirectView.as_view(url='/portal/', permanent=True)),
     path('', include(router.urls)),
-    path('oauth/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    path('oauth/', include('sso_auth.oauth_urls', namespace='oauth2_provider')),
     path('portal/', PortalView.as_view(), name='sso_auth_portal'),
+    path('admin/', AdminPortalView.as_view(), name='sso_admin_portal'),
 ]

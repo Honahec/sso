@@ -11,7 +11,7 @@ class UserAuthSerializer(serializers.ModelSerializer):
 class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
-        fields = ['admin_user']
+        fields = ['admin_user', 'create_applications']
 
 
 class UserSettingsSerializer(serializers.ModelSerializer):

@@ -48,6 +48,7 @@ type Feedback = {
 
 type PermissionInfo = {
   admin_user?: boolean;
+  create_applications?: boolean;
 } | null;
 
 type UserInfo = {
@@ -519,7 +520,6 @@ const SettingsPanel: React.FC<{
         <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
           <Box>
             <Heading size="md">Profile overview</Heading>
-            <Text color="gray.600">Synced with your Django account.</Text>
           </Box>
           <Button
             size="sm"
@@ -544,6 +544,11 @@ const SettingsPanel: React.FC<{
               {user.permission.admin_user
                 ? "Administrator access"
                 : "Standard access"}
+            </Badge>
+          ) : null}
+          {user?.permission?.create_applications ? (
+            <Badge colorScheme="blue" width="fit-content">
+              OAuth application manager
             </Badge>
           ) : null}
         </Stack>
@@ -714,20 +719,33 @@ const SettingsExperience: React.FC<{
   nextUrl,
 }) => {
   const quickLinks = useMemo<QuickLink[]>(() => {
-    const baseLinks: QuickLink[] = [
-      {
+    const baseLinks: QuickLink[] = [];
+
+    if (user?.permission?.create_applications) {
+      baseLinks.push({
         title: "OAuth applications",
         description: "Register, update, and delete OAuth client credentials.",
         href: "/oauth/applications/",
         colorScheme: "purple",
-      },
-      {
-        title: "Authorized tokens",
-        description: "Review scopes and revoke issued access tokens.",
-        href: "/oauth/authorized_tokens/",
-        colorScheme: "blue",
-      },
-    ];
+      });
+    }
+
+    baseLinks.push({
+      title: "Authorized tokens",
+      description: "Review scopes and revoke issued access tokens.",
+      href: "/oauth/authorized_tokens/",
+      colorScheme: "blue",
+    });
+
+    if (user?.permission?.admin_user) {
+      baseLinks.push({
+        title: "Admin dashboard",
+        description:
+          "Access the admin interface. Manage users and permissions.",
+        href: "/admin/",
+        colorScheme: "purple",
+      });
+    }
 
     if (showContinueCard && nextUrl) {
       baseLinks.push({
@@ -739,7 +757,7 @@ const SettingsExperience: React.FC<{
     }
 
     return baseLinks;
-  }, [showContinueCard, nextUrl]);
+  }, [showContinueCard, nextUrl, user?.permission?.create_applications]);
 
   return (
     <Container maxW="6xl" py={{ base: 10, md: 16 }}>
@@ -763,9 +781,8 @@ const SettingsExperience: React.FC<{
             </Badge>
             <Heading size="xl">Hi {user?.username ?? "there"} 👋</Heading>
             <Text opacity={0.9} fontSize={{ base: "md", md: "lg" }}>
-              You now have a full Django session and fresh JWT tokens. Use the
-              quick links below to manage OAuth clients or adjust your account
-              details.
+              Use the quick links below to manage OAuth clients or adjust your
+              account details.
             </Text>
           </VStack>
         </Box>
@@ -963,8 +980,11 @@ const AuthApp: React.FC = () => {
       setSettingsFeedback({
         type: "success",
         title: "Password updated",
-        message: "Your password has been changed.",
+        message: "Your password has been changed. Reloading…",
       });
+      window.setTimeout(() => {
+        window.location.reload();
+      }, 150);
       return true;
     } catch (error) {
       setSettingsFeedback({
@@ -995,9 +1015,11 @@ const AuthApp: React.FC = () => {
       setSettingsFeedback({
         type: "success",
         title: "Email updated",
-        message: "Your email address has been changed.",
+        message: "Your email address has been changed. Reloading…",
       });
-      await loadUserProfile(tokens.access);
+      window.setTimeout(() => {
+        window.location.reload();
+      }, 150);
     } catch (error) {
       setSettingsFeedback({
         type: "error",

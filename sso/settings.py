@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'sso_auth',
+    'sso_admin',
     'oauth2_provider',
 ]
 

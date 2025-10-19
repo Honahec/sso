@@ -69,7 +69,7 @@ class UserAuthViewSet(ModelViewSet):
         detail=False,
         methods=['post'],
         url_path='register',
-        permission_classes=[AllowAny],
+        permission_classes=[IsAuthenticated],
     )
     def register(self, request):
         serializer = UserAuthSerializer(data=request.data)
@@ -204,6 +204,7 @@ class PortalView(TemplateView):
         if user and getattr(user, 'permission', None):
             permission_info = {
                 'admin_user': user.permission.admin_user,
+                'create_applications': user.permission.create_applications,
             }
 
         portal_context = {

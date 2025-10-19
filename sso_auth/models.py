@@ -5,6 +5,7 @@ from django.contrib.auth.models import AbstractUser
 
 class Permission(models.Model):
     admin_user = models.BooleanField(default=False)
+    create_applications = models.BooleanField(default=False)
 
 class User(AbstractUser):
     username = models.CharField(max_length=150, unique=True)
