@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     'localhost',
-    '*.honahec.cc',
+    'sso.honahec.cc',
     '127.0.0.1',
 ]
 
@@ -64,9 +64,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOW_ORIGINS = [
-    'localhost',
-    'https://*.honahec.cc',
+CORS_ALLOW_ALL_ORIGINS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost',
+    'https://sso.honahec.cc',
 ]
 
 ROOT_URLCONF = 'sso.urls'
