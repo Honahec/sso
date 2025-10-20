@@ -152,7 +152,8 @@ const apiRequest = async <T,>(
   url: string,
   method: string,
   token?: string | null,
-  payload?: Record<string, unknown>
+  payload?: Record<string, unknown>,
+  onAuthError?: () => void
 ): Promise<T> => {
   const headers: Record<string, string> = { Accept: "application/json" };
   let body: string | undefined;
@@ -187,6 +188,10 @@ const apiRequest = async <T,>(
   }
 
   if (!response.ok) {
+    // 检查是否是鉴权失效错误 (401 或 403)
+    if ((response.status === 401 || response.status === 403) && onAuthError) {
+      onAuthError();
+    }
     const message =
       data?.detail ?? data?.error ?? data?.message ?? response.statusText;
     throw new Error(message || "Request failed");
@@ -838,30 +843,50 @@ const AuthApp: React.FC = () => {
   const nextUrl = NEXT_URL;
   const hasJwtSession = Boolean(tokens?.access);
 
-  const loadUserProfile = async (accessToken: string | null) => {
-    if (!accessToken) {
-      setUser(portalContext.sessionUser || null);
-      return;
-    }
-    setLoadingUser(true);
-    try {
-      const data = await apiRequest<UserInfo>(
-        endpoints.userInfo,
-        "GET",
-        accessToken
-      );
-      setUser(data);
-    } catch (error) {
-      setSettingsFeedback({
-        type: "error",
-        title: "Profile",
-        message:
-          error instanceof Error ? error.message : "Unable to load profile",
-      });
-    } finally {
-      setLoadingUser(false);
-    }
-  };
+  const clearSession = React.useCallback(() => {
+    setTokens(null);
+    persistTokens(null);
+    setUser(portalContext.sessionUser || null);
+  }, []);
+
+  const handleAuthError = React.useCallback(() => {
+    clearSession();
+    setSettingsFeedback({
+      type: "error",
+      title: "Session expired",
+      message: "Your session has expired. Please log in again.",
+    });
+  }, [clearSession]);
+
+  const loadUserProfile = React.useCallback(
+    async (accessToken: string | null) => {
+      if (!accessToken) {
+        setUser(portalContext.sessionUser || null);
+        return;
+      }
+      setLoadingUser(true);
+      try {
+        const data = await apiRequest<UserInfo>(
+          endpoints.userInfo,
+          "GET",
+          accessToken,
+          undefined,
+          handleAuthError
+        );
+        setUser(data);
+      } catch (error) {
+        setSettingsFeedback({
+          type: "error",
+          title: "Profile",
+          message:
+            error instanceof Error ? error.message : "Unable to load profile",
+        });
+      } finally {
+        setLoadingUser(false);
+      }
+    },
+    [handleAuthError]
+  );
 
   useEffect(() => {
     if (tokens?.access) {
@@ -869,18 +894,12 @@ const AuthApp: React.FC = () => {
     } else {
       setUser(portalContext.sessionUser || null);
     }
-  }, [tokens?.access]);
+  }, [tokens?.access, loadUserProfile]);
 
   const storeSession = (sessionTokens: TokenPair | null) => {
     setTokens(sessionTokens);
     persistTokens(sessionTokens);
   };
-
-  const clearSession = React.useCallback(() => {
-    setTokens(null);
-    persistTokens(null);
-    setUser(portalContext.sessionUser || null);
-  }, []);
 
   useEffect(() => {
     if (!nextUrl) {
@@ -975,7 +994,8 @@ const AuthApp: React.FC = () => {
         endpoints.changePassword,
         "POST",
         tokens.access,
-        payload
+        payload,
+        handleAuthError
       );
       setSettingsFeedback({
         type: "success",
@@ -1011,7 +1031,13 @@ const AuthApp: React.FC = () => {
     setEmailLoading(true);
     setSettingsFeedback(null);
     try {
-      await apiRequest(endpoints.changeEmail, "POST", tokens.access, payload);
+      await apiRequest(
+        endpoints.changeEmail,
+        "POST",
+        tokens.access,
+        payload,
+        handleAuthError
+      );
       setSettingsFeedback({
         type: "success",
         title: "Email updated",
@@ -1037,9 +1063,15 @@ const AuthApp: React.FC = () => {
     setSettingsFeedback(null);
     try {
       if (tokens?.access) {
-        await apiRequest(endpoints.logout, "POST", tokens.access, {
-          refresh: tokens.refresh,
-        });
+        await apiRequest(
+          endpoints.logout,
+          "POST",
+          tokens.access,
+          {
+            refresh: tokens.refresh,
+          },
+          handleAuthError
+        );
       }
     } catch (error) {
       setSettingsFeedback({
