@@ -69,7 +69,7 @@ class UserAuthViewSet(ModelViewSet):
         detail=False,
         methods=['post'],
         url_path='register',
-        permission_classes=[IsAuthenticated],
+        permission_classes=[AllowAny],
     )
     def register(self, request):
         serializer = UserAuthSerializer(data=request.data)
