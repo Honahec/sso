@@ -1,8 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.http import JsonResponse
+from django.views import View
 from oauth2_provider import views as oauth_views
-from oauth2_provider.views import ProtectedResourceView
+from oauth2_provider.models import AccessToken
 
 
 class CreateApplicationsPermissionRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
@@ -47,7 +48,7 @@ class ProtectedApplicationUpdateView(
     pass
 
 
-class UserInfoView(ProtectedResourceView):
+class UserInfoView(View):
     """
     API endpoint to return user information based on OAuth2 access token.
     Returns username, email, and permissions based on the granted scopes.
@@ -61,29 +62,46 @@ class UserInfoView(ProtectedResourceView):
     """
 
     def get(self, request, *args, **kwargs):
-        # Get the token from the request (validated by ProtectedResourceView)
-        token = request.resource_owner
+        # Extract the Bearer token from Authorization header
+        auth_header = request.META.get('HTTP_AUTHORIZATION', '')
+        
+        if not auth_header.startswith('Bearer '):
+            return JsonResponse({'error': 'Missing or invalid Authorization header'}, status=401)
+        
+        token_string = auth_header[7:]  # Remove 'Bearer ' prefix
+        
+        # Find the AccessToken object
+        try:
+            access_token = AccessToken.objects.select_related('user').get(token=token_string)
+        except AccessToken.DoesNotExist:
+            return JsonResponse({'error': 'Invalid token'}, status=401)
+        
+        # Check if token is expired
+        if access_token.is_expired():
+            return JsonResponse({'error': 'Token expired'}, status=401)
+        
+        # Get the user (resource owner)
+        user = access_token.user
         
         # Get the scopes from the access token
-        access_token = request.auth
-        scopes = access_token.scope.split() if access_token and access_token.scope else []
+        scopes = access_token.scope.split() if access_token.scope else []
         
         # Build response based on scopes
         user_info = {
-            'sub': str(token.id),  # Subject (user ID) is always included
+            'sub': str(user.id),  # Subject (user ID) is always included
         }
         
         # Add username if 'username' scope is granted
         if 'username' in scopes:
-            user_info['username'] = token.username
+            user_info['username'] = user.username
         
         # Add email if 'email' scope is granted
         if 'email' in scopes:
-            user_info['email'] = token.email
+            user_info['email'] = user.email
         
         # Add permissions if 'permissions' scope is granted (read-only)
         if 'permissions' in scopes:
-            permission = getattr(token, 'permission', None)
+            permission = getattr(user, 'permission', None)
             if permission:
                 user_info['permissions'] = {
                     'admin_user': permission.admin_user,
