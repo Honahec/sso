@@ -8,6 +8,7 @@ from .oauth_views import (
     ProtectedApplicationListView,
     ProtectedApplicationRegistrationView,
     ProtectedApplicationUpdateView,
+    UserInfoView,
 )
 
 
@@ -48,4 +49,9 @@ management_urlpatterns = [
     ),
 ]
 
-urlpatterns = base_urlpatterns + management_urlpatterns + oidc_urlpatterns
+# User info endpoint
+userinfo_urlpatterns = [
+    path("userinfo/", UserInfoView.as_view(), name="userinfo"),
+]
+
+urlpatterns = base_urlpatterns + management_urlpatterns + oidc_urlpatterns + userinfo_urlpatterns

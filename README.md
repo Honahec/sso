@@ -49,3 +49,26 @@ user = User.objects.create_user(
 )
 user.save()
 ```
+
+## Authorization Flow
+
+1. **Request authorization**:
+
+```
+GET /oauth/authorize/?client_id=<client_id>&response_type=code&redirect_uri=<redirect_uri>&scope=username email permissions
+```
+
+2. **Exchange code for token**:
+
+```bash
+curl -X POST http://localhost:8000/oauth/token/ \
+  -d "grant_type=authorization_code" \
+  -d "code=<code>" \
+  -d "redirect_uri=<redirect_uri>" \
+  -d "client_id=<client_id>" \
+  -d "client_secret=<client_secret>"
+```
+
+## SCOPE
+
+Refer to [SCOPE.md](/SCOPE.md) for a list of all scopes you can authorize.

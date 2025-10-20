@@ -20,7 +20,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-d(70*9=f6p&--f^0m8_xt(b57#nz+62nye-9(=ctn@*y6t0=x_'
+import os
+from dotenv import load_dotenv
+
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -191,6 +195,16 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
     'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
+}
+
+# OAuth2 Provider configuration
+OAUTH2_PROVIDER = {
+    'SCOPES': {
+        'username': 'Access to your username (read-only)',
+        'email': 'Access to your email address (read-only)',
+        'permissions': 'Access to your permissions (read-only)',
+    },
+    'OAUTH2_VALIDATOR_CLASS': 'sso_auth.oauth_validators.CustomOAuth2Validator',
 }
 
 LOGIN_URL = '/portal/'
