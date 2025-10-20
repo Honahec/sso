@@ -1,6 +1,6 @@
 from django.urls import path
 from oauth2_provider import views as oauth_views
-from oauth2_provider.urls import base_urlpatterns, oidc_urlpatterns
+from oauth2_provider.urls import base_urlpatterns
 
 from .oauth_views import (
     ProtectedApplicationDeleteView,
@@ -54,4 +54,4 @@ userinfo_urlpatterns = [
     path("userinfo/", UserInfoView.as_view(), name="userinfo"),
 ]
 
-urlpatterns = base_urlpatterns + management_urlpatterns + oidc_urlpatterns + userinfo_urlpatterns
+urlpatterns = base_urlpatterns + management_urlpatterns + userinfo_urlpatterns
