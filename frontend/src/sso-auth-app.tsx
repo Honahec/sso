@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { createRoot } from "react-dom/client";
+import React, { useEffect, useMemo, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 import {
   Alert,
   AlertDescription,
@@ -29,11 +29,11 @@ import {
   Tabs,
   Text,
   VStack,
-} from "@chakra-ui/react";
-import { CheckCircleIcon, ExternalLinkIcon, LockIcon } from "@chakra-ui/icons";
-import { ChakraProvider } from "@chakra-ui/react";
+} from '@chakra-ui/react';
+import { CheckCircleIcon, ExternalLinkIcon, LockIcon } from '@chakra-ui/icons';
+import { ChakraProvider } from '@chakra-ui/react';
 
-import { theme } from "./theme";
+import { theme } from './theme';
 
 type TokenPair = {
   access: string;
@@ -41,7 +41,7 @@ type TokenPair = {
 };
 
 type Feedback = {
-  type: "success" | "error";
+  type: 'success' | 'error';
   title?: string;
   message: string;
 } | null;
@@ -68,14 +68,14 @@ type PortalContext = {
 };
 
 const loadPortalContext = (): PortalContext => {
-  const script = document.getElementById("sso-auth-context");
+  const script = document.getElementById('sso-auth-context');
   if (!script) {
     return {};
   }
   try {
-    return JSON.parse(script.textContent || "{}") as PortalContext;
+    return JSON.parse(script.textContent || '{}') as PortalContext;
   } catch (error) {
-    console.warn("Unable to parse portal context payload", error);
+    console.warn('Unable to parse portal context payload', error);
     return {};
   }
 };
@@ -84,54 +84,54 @@ const portalContext = loadPortalContext();
 
 const sanitizeNextUrl = (value?: string): string => {
   if (!value) {
-    return "";
+    return '';
   }
   const trimmed = value.trim();
   if (!trimmed) {
-    return "";
+    return '';
   }
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
     try {
       const parsed = new URL(trimmed);
       if (parsed.origin !== window.location.origin) {
-        return "";
+        return '';
       }
       return parsed.pathname + parsed.search + parsed.hash;
     } catch (error) {
-      console.warn("Invalid next URL provided to portal", error);
-      return "";
+      console.warn('Invalid next URL provided to portal', error);
+      return '';
     }
   }
-  return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
 };
 
 const NEXT_URL = sanitizeNextUrl(portalContext.nextUrl);
 
 const endpoints = {
-  login: "/user/login/",
-  register: "/user/register/",
-  logout: "/user/logout/",
-  userInfo: "/user-settings/info/",
-  changePassword: "/user-settings/change-password/",
-  changeEmail: "/user-settings/change-email/",
+  login: '/user/login/',
+  register: '/user/register/',
+  logout: '/user/logout/',
+  userInfo: '/user-settings/info/',
+  changePassword: '/user-settings/change-password/',
+  changeEmail: '/user-settings/change-email/',
 };
 
 const loadStoredTokens = (): TokenPair | null => {
   try {
-    const raw = window.localStorage.getItem("ssoTokens");
+    const raw = window.localStorage.getItem('ssoTokens');
     if (!raw) {
       return null;
     }
     const parsed = JSON.parse(raw) as TokenPair;
     if (
       parsed &&
-      typeof parsed.access === "string" &&
-      typeof parsed.refresh === "string"
+      typeof parsed.access === 'string' &&
+      typeof parsed.refresh === 'string'
     ) {
       return parsed;
     }
   } catch (error) {
-    console.warn("Unable to load stored tokens", error);
+    console.warn('Unable to load stored tokens', error);
   }
   return null;
 };
@@ -139,12 +139,12 @@ const loadStoredTokens = (): TokenPair | null => {
 const persistTokens = (tokens: TokenPair | null) => {
   try {
     if (!tokens) {
-      window.localStorage.removeItem("ssoTokens");
+      window.localStorage.removeItem('ssoTokens');
     } else {
-      window.localStorage.setItem("ssoTokens", JSON.stringify(tokens));
+      window.localStorage.setItem('ssoTokens', JSON.stringify(tokens));
     }
   } catch (error) {
-    console.warn("Unable to persist tokens", error);
+    console.warn('Unable to persist tokens', error);
   }
 };
 
@@ -155,10 +155,10 @@ const apiRequest = async <T,>(
   payload?: Record<string, unknown>,
   onAuthError?: () => void
 ): Promise<T> => {
-  const headers: Record<string, string> = { Accept: "application/json" };
+  const headers: Record<string, string> = { Accept: 'application/json' };
   let body: string | undefined;
   if (payload !== undefined) {
-    headers["Content-Type"] = "application/json";
+    headers['Content-Type'] = 'application/json';
     body = JSON.stringify(payload);
   }
   if (token) {
@@ -171,10 +171,10 @@ const apiRequest = async <T,>(
       method,
       headers,
       body,
-      credentials: "same-origin",
+      credentials: 'same-origin',
     });
   } catch (error) {
-    throw new Error("Network error. Please try again.");
+    throw new Error('Network error. Please try again.');
   }
 
   const text = await response.text();
@@ -194,7 +194,7 @@ const apiRequest = async <T,>(
     }
     const message =
       data?.detail ?? data?.error ?? data?.message ?? response.statusText;
-    throw new Error(message || "Request failed");
+    throw new Error(message || 'Request failed');
   }
 
   return data as T;
@@ -208,16 +208,16 @@ const FeedbackAlert: React.FC<{
     return null;
   }
   return (
-    <Alert status={feedback.type} variant="subtle" borderRadius="lg">
+    <Alert status={feedback.type} variant='subtle' borderRadius='lg'>
       <AlertIcon />
-      <Stack spacing={1} align="flex-start">
+      <Stack spacing={1} align='flex-start'>
         {feedback.title ? <AlertTitle>{feedback.title}</AlertTitle> : null}
         <AlertDescription>{feedback.message}</AlertDescription>
         {onDismiss ? (
           <Button
-            size="sm"
-            variant="ghost"
-            colorScheme={feedback.type === "error" ? "red" : "green"}
+            size='sm'
+            variant='ghost'
+            colorScheme={feedback.type === 'error' ? 'red' : 'green'}
             onClick={onDismiss}
           >
             Dismiss
@@ -234,8 +234,8 @@ const LoginForm: React.FC<{
   feedback: Feedback;
   onClearFeedback: () => void;
 }> = ({ onSubmit, loading, feedback, onClearFeedback }) => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -244,34 +244,34 @@ const LoginForm: React.FC<{
   };
 
   return (
-    <VStack spacing={6} align="stretch">
+    <VStack spacing={6} align='stretch'>
       <FeedbackAlert feedback={feedback} onDismiss={onClearFeedback} />
       <form onSubmit={submit}>
-        <VStack spacing={4} align="stretch">
+        <VStack spacing={4} align='stretch'>
           <FormControl isRequired>
-            <FormLabel htmlFor="login-username">Username</FormLabel>
+            <FormLabel htmlFor='login-username'>Username</FormLabel>
             <Input
-              id="login-username"
+              id='login-username'
               value={username}
               onChange={(event) => setUsername(event.target.value)}
-              autoComplete="username"
+              autoComplete='username'
             />
           </FormControl>
           <FormControl isRequired>
-            <FormLabel htmlFor="login-password">Password</FormLabel>
+            <FormLabel htmlFor='login-password'>Password</FormLabel>
             <Input
-              id="login-password"
-              type="password"
+              id='login-password'
+              type='password'
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              autoComplete="current-password"
+              autoComplete='current-password'
             />
           </FormControl>
           <Button
-            type="submit"
-            colorScheme="purple"
+            type='submit'
+            colorScheme='purple'
             isLoading={loading}
-            loadingText="Logging in"
+            loadingText='Logging in'
           >
             Log in
           </Button>
@@ -291,9 +291,9 @@ const RegisterForm: React.FC<{
   feedback: Feedback;
   onClearFeedback: () => void;
 }> = ({ onSubmit, loading, feedback, onClearFeedback }) => {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -302,44 +302,44 @@ const RegisterForm: React.FC<{
   };
 
   return (
-    <VStack spacing={6} align="stretch">
+    <VStack spacing={6} align='stretch'>
       <FeedbackAlert feedback={feedback} onDismiss={onClearFeedback} />
       <form onSubmit={submit}>
-        <VStack spacing={4} align="stretch">
+        <VStack spacing={4} align='stretch'>
           <FormControl isRequired>
-            <FormLabel htmlFor="register-username">Username</FormLabel>
+            <FormLabel htmlFor='register-username'>Username</FormLabel>
             <Input
-              id="register-username"
+              id='register-username'
               value={username}
               onChange={(event) => setUsername(event.target.value)}
-              autoComplete="username"
+              autoComplete='username'
             />
           </FormControl>
           <FormControl isRequired>
-            <FormLabel htmlFor="register-email">Email</FormLabel>
+            <FormLabel htmlFor='register-email'>Email</FormLabel>
             <Input
-              id="register-email"
-              type="email"
+              id='register-email'
+              type='email'
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              autoComplete="email"
+              autoComplete='email'
             />
           </FormControl>
           <FormControl isRequired>
-            <FormLabel htmlFor="register-password">Password</FormLabel>
+            <FormLabel htmlFor='register-password'>Password</FormLabel>
             <Input
-              id="register-password"
-              type="password"
+              id='register-password'
+              type='password'
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              autoComplete="new-password"
+              autoComplete='new-password'
             />
           </FormControl>
           <Button
-            type="submit"
-            colorScheme="purple"
+            type='submit'
+            colorScheme='purple'
             isLoading={loading}
-            loadingText="Registering"
+            loadingText='Registering'
           >
             Register
           </Button>
@@ -372,20 +372,20 @@ const AuthExperience: React.FC<{
   clearLoginFeedback,
   clearRegisterFeedback,
 }) => (
-  <Container maxW="6xl" py={{ base: 10, md: 16 }}>
+  <Container maxW='6xl' py={{ base: 10, md: 16 }}>
     <Stack
-      direction={{ base: "column-reverse", lg: "row" }}
+      direction={{ base: 'column-reverse', lg: 'row' }}
       spacing={{ base: 10, lg: 16 }}
-      align="stretch"
+      align='stretch'
     >
       <Box
-        flex="1"
-        bg="white"
-        borderRadius="2xl"
-        shadow="xl"
+        flex='1'
+        bg='white'
+        borderRadius='2xl'
+        shadow='xl'
         p={{ base: 6, md: 10 }}
       >
-        <Tabs variant="soft-rounded" colorScheme="purple">
+        <Tabs variant='soft-rounded' colorScheme='purple'>
           <TabList>
             <Tab>Log in</Tab>
             <Tab>Register</Tab>
@@ -412,42 +412,42 @@ const AuthExperience: React.FC<{
       </Box>
 
       <Stack
-        flex="1"
+        flex='1'
         spacing={8}
-        justify="center"
-        bgGradient="linear(to-br, purple.500, purple.700)"
-        color="white"
-        borderRadius="2xl"
-        shadow="xl"
+        justify='center'
+        bgGradient='linear(to-br, purple.500, purple.700)'
+        color='white'
+        borderRadius='2xl'
+        shadow='xl'
         p={{ base: 6, md: 10 }}
       >
-        <VStack align="flex-start" spacing={4}>
+        <VStack align='flex-start' spacing={4}>
           <Badge
-            colorScheme="blackAlpha"
-            borderRadius="full"
+            colorScheme='blackAlpha'
+            borderRadius='full'
             px={3}
             py={1}
-            fontSize="0.8rem"
+            fontSize='0.8rem'
           >
             Unified Access
           </Badge>
-          <Heading size="xl">
+          <Heading size='xl'>
             One portal for everything OAuth and user management.
           </Heading>
-          <Text opacity={0.85} fontSize="lg">
+          <Text opacity={0.85} fontSize='lg'>
             Use the account tools to obtain JSON Web Tokens, manage OAuth client
             applications, and adjust account settings without touching the
             Django admin.
           </Text>
         </VStack>
-        <Stack spacing={4} fontSize="md">
+        <Stack spacing={4} fontSize='md'>
           <List spacing={3}>
             <ListItem>
-              <ListIcon as={CheckCircleIcon} color="green.200" />
+              <ListIcon as={CheckCircleIcon} color='green.200' />
               Manage OAuth clients and authorized tokens with a few clicks.
             </ListItem>
             <ListItem>
-              <ListIcon as={CheckCircleIcon} color="green.200" />
+              <ListIcon as={CheckCircleIcon} color='green.200' />
               Secure session + JWT login keeps both APIs and browser flows in
               sync.
             </ListItem>
@@ -493,12 +493,12 @@ const SettingsPanel: React.FC<{
   emailLoading,
   logoutLoading,
 }) => {
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [newEmail, setNewEmail] = useState(user?.email ?? "");
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newEmail, setNewEmail] = useState(user?.email ?? '');
 
   useEffect(() => {
-    setNewEmail(user?.email ?? "");
+    setNewEmail(user?.email ?? '');
   }, [user?.email]);
 
   const submitPassword = async (event: React.FormEvent) => {
@@ -508,8 +508,8 @@ const SettingsPanel: React.FC<{
       new_password: newPassword,
     });
     if (success) {
-      setOldPassword("");
-      setNewPassword("");
+      setOldPassword('');
+      setNewPassword('');
     }
   };
 
@@ -519,81 +519,81 @@ const SettingsPanel: React.FC<{
   };
 
   return (
-    <VStack spacing={6} align="stretch">
+    <VStack spacing={6} align='stretch'>
       <FeedbackAlert feedback={alert} onDismiss={onClearAlert} />
-      <Box bg="white" borderRadius="lg" shadow="sm" p={{ base: 5, md: 6 }}>
-        <Flex justify="space-between" align="center" flexWrap="wrap" gap={4}>
+      <Box bg='white' borderRadius='lg' shadow='sm' p={{ base: 5, md: 6 }}>
+        <Flex justify='space-between' align='center' flexWrap='wrap' gap={4}>
           <Box>
-            <Heading size="md">Profile overview</Heading>
+            <Heading size='md'>Profile overview</Heading>
           </Box>
           <Button
-            size="sm"
-            variant="outline"
+            size='sm'
+            variant='outline'
             onClick={onRefresh}
-            leftIcon={loadingUser ? <Spinner size="xs" /> : undefined}
+            leftIcon={loadingUser ? <Spinner size='xs' /> : undefined}
             isDisabled={loadingUser}
           >
-            {loadingUser ? "Refreshing…" : "Refresh"}
+            {loadingUser ? 'Refreshing…' : 'Refresh'}
           </Button>
         </Flex>
-        <Stack spacing={2} mt={4} color="gray.700">
-          <Text fontWeight="semibold" fontSize="lg">
-            {user?.username ?? "—"}
+        <Stack spacing={2} mt={4} color='gray.700'>
+          <Text fontWeight='semibold' fontSize='lg'>
+            {user?.username ?? '—'}
           </Text>
-          <Text>{user?.email ?? "—"}</Text>
+          <Text>{user?.email ?? '—'}</Text>
           {user?.permission ? (
             <Badge
-              colorScheme={user.permission.admin_user ? "purple" : "gray"}
-              width="fit-content"
+              colorScheme={user.permission.admin_user ? 'purple' : 'gray'}
+              width='fit-content'
             >
               {user.permission.admin_user
-                ? "Administrator access"
-                : "Standard access"}
+                ? 'Administrator access'
+                : 'Standard access'}
             </Badge>
           ) : null}
           {user?.permission?.create_applications ? (
-            <Badge colorScheme="blue" width="fit-content">
+            <Badge colorScheme='blue' width='fit-content'>
               OAuth application manager
             </Badge>
           ) : null}
         </Stack>
       </Box>
 
-      <Box bg="white" borderRadius="lg" shadow="sm" p={{ base: 5, md: 6 }}>
-        <Heading size="md" mb={4}>
+      <Box bg='white' borderRadius='lg' shadow='sm' p={{ base: 5, md: 6 }}>
+        <Heading size='md' mb={4}>
           Change password
         </Heading>
         <form onSubmit={submitPassword}>
-          <VStack spacing={4} align="stretch">
+          <VStack spacing={4} align='stretch'>
             <FormControl isRequired>
-              <FormLabel htmlFor="settings-old-password">
+              <FormLabel htmlFor='settings-old-password'>
                 Current password
               </FormLabel>
               <Input
-                id="settings-old-password"
-                type="password"
+                id='settings-old-password'
+                type='password'
                 value={oldPassword}
                 onChange={(event) => setOldPassword(event.target.value)}
-                autoComplete="current-password"
+                autoComplete='current-password'
               />
             </FormControl>
             <FormControl isRequired>
-              <FormLabel htmlFor="settings-new-password">
+              <FormLabel htmlFor='settings-new-password'>
                 New password
               </FormLabel>
               <Input
-                id="settings-new-password"
-                type="password"
+                id='settings-new-password'
+                type='password'
                 value={newPassword}
                 onChange={(event) => setNewPassword(event.target.value)}
-                autoComplete="new-password"
+                autoComplete='new-password'
               />
             </FormControl>
             <Button
-              type="submit"
-              colorScheme="purple"
+              type='submit'
+              colorScheme='purple'
               isLoading={passwordLoading}
-              loadingText="Saving"
+              loadingText='Saving'
             >
               Save changes
             </Button>
@@ -601,27 +601,27 @@ const SettingsPanel: React.FC<{
         </form>
       </Box>
 
-      <Box bg="white" borderRadius="lg" shadow="sm" p={{ base: 5, md: 6 }}>
-        <Heading size="md" mb={4}>
+      <Box bg='white' borderRadius='lg' shadow='sm' p={{ base: 5, md: 6 }}>
+        <Heading size='md' mb={4}>
           Change email address
         </Heading>
         <form onSubmit={submitEmail}>
-          <VStack spacing={4} align="stretch">
+          <VStack spacing={4} align='stretch'>
             <FormControl isRequired>
-              <FormLabel htmlFor="settings-email">Email address</FormLabel>
+              <FormLabel htmlFor='settings-email'>Email address</FormLabel>
               <Input
-                id="settings-email"
-                type="email"
+                id='settings-email'
+                type='email'
                 value={newEmail}
                 onChange={(event) => setNewEmail(event.target.value)}
-                autoComplete="email"
+                autoComplete='email'
               />
             </FormControl>
             <Button
-              type="submit"
-              colorScheme="purple"
+              type='submit'
+              colorScheme='purple'
               isLoading={emailLoading}
-              loadingText="Saving"
+              loadingText='Saving'
             >
               Save email
             </Button>
@@ -629,19 +629,19 @@ const SettingsPanel: React.FC<{
         </form>
       </Box>
 
-      <Box bg="white" borderRadius="lg" shadow="sm" p={{ base: 5, md: 6 }}>
-        <Heading size="md" mb={2}>
+      <Box bg='white' borderRadius='lg' shadow='sm' p={{ base: 5, md: 6 }}>
+        <Heading size='md' mb={2}>
           Session security
         </Heading>
-        <Text color="gray.600">
+        <Text color='gray.600'>
           Revoke your tokens and close every active session.
         </Text>
         <Button
           mt={4}
-          colorScheme="red"
+          colorScheme='red'
           onClick={onLogout}
           isLoading={logoutLoading}
-          loadingText="Logging out"
+          loadingText='Logging out'
         >
           Log out of all sessions
         </Button>
@@ -654,7 +654,7 @@ type QuickLink = {
   title: string;
   description: string;
   href: string;
-  colorScheme: "purple" | "blue" | "teal";
+  colorScheme: 'purple' | 'blue' | 'teal';
 };
 
 const QuickLinkCard: React.FC<QuickLink> = ({
@@ -664,26 +664,26 @@ const QuickLinkCard: React.FC<QuickLink> = ({
   colorScheme,
 }) => (
   <Box
-    bg="white"
-    borderRadius="lg"
-    shadow="md"
+    bg='white'
+    borderRadius='lg'
+    shadow='md'
     p={6}
-    borderWidth="1px"
-    borderColor="gray.100"
-    transition="transform 0.2s, box-shadow 0.2s"
-    _hover={{ transform: "translateY(-4px)", shadow: "lg" }}
+    borderWidth='1px'
+    borderColor='gray.100'
+    transition='transform 0.2s, box-shadow 0.2s'
+    _hover={{ transform: 'translateY(-4px)', shadow: 'lg' }}
   >
-    <Heading size="md" mb={3}>
+    <Heading size='md' mb={3}>
       {title}
     </Heading>
-    <Text color="gray.600" mb={6}>
+    <Text color='gray.600' mb={6}>
       {description}
     </Text>
     <Button
-      as="a"
+      as='a'
       href={href}
       colorScheme={colorScheme}
-      variant="solid"
+      variant='solid'
       rightIcon={<ExternalLinkIcon />}
     >
       Open
@@ -728,36 +728,36 @@ const SettingsExperience: React.FC<{
 
     if (user?.permission?.create_applications) {
       baseLinks.push({
-        title: "OAuth applications",
-        description: "Register, update, and delete OAuth client credentials.",
-        href: "/oauth/applications/",
-        colorScheme: "purple",
+        title: 'OAuth applications',
+        description: 'Register, update, and delete OAuth client credentials.',
+        href: '/oauth/applications/',
+        colorScheme: 'purple',
       });
     }
 
     baseLinks.push({
-      title: "Authorized tokens",
-      description: "Review scopes and revoke issued access tokens.",
-      href: "/oauth/authorized_tokens/",
-      colorScheme: "blue",
+      title: 'Authorized tokens',
+      description: 'Review scopes and revoke issued access tokens.',
+      href: '/oauth/authorized_tokens/',
+      colorScheme: 'blue',
     });
 
     if (user?.permission?.admin_user) {
       baseLinks.push({
-        title: "Admin dashboard",
+        title: 'Admin dashboard',
         description:
-          "Access the admin interface. Manage users and permissions.",
-        href: "/admin/",
-        colorScheme: "purple",
+          'Access the admin interface. Manage users and permissions.',
+        href: '/admin/',
+        colorScheme: 'purple',
       });
     }
 
     if (showContinueCard && nextUrl) {
       baseLinks.push({
-        title: "Return to requested page",
-        description: "Continue the flow that requested authentication.",
+        title: 'Return to requested page',
+        description: 'Continue the flow that requested authentication.',
         href: nextUrl,
-        colorScheme: "teal",
+        colorScheme: 'teal',
       });
     }
 
@@ -765,27 +765,27 @@ const SettingsExperience: React.FC<{
   }, [showContinueCard, nextUrl, user?.permission?.create_applications]);
 
   return (
-    <Container maxW="6xl" py={{ base: 10, md: 16 }}>
+    <Container maxW='6xl' py={{ base: 10, md: 16 }}>
       <Stack spacing={10}>
         <Box
-          bgGradient="linear(to-r, purple.600, purple.400)"
-          color="white"
-          borderRadius="2xl"
-          shadow="xl"
+          bgGradient='linear(to-r, purple.600, purple.400)'
+          color='white'
+          borderRadius='2xl'
+          shadow='xl'
           p={{ base: 8, md: 12 }}
         >
-          <VStack align="flex-start" spacing={3}>
+          <VStack align='flex-start' spacing={3}>
             <Badge
-              colorScheme="blackAlpha"
-              borderRadius="full"
+              colorScheme='blackAlpha'
+              borderRadius='full'
               px={3}
               py={1}
-              fontSize="0.8rem"
+              fontSize='0.8rem'
             >
               Signed in
             </Badge>
-            <Heading size="xl">Hi {user?.username ?? "there"} 👋</Heading>
-            <Text opacity={0.9} fontSize={{ base: "md", md: "lg" }}>
+            <Heading size='xl'>Hi {user?.username ?? 'there'} 👋</Heading>
+            <Text opacity={0.9} fontSize={{ base: 'md', md: 'lg' }}>
               Use the quick links below to manage OAuth clients or adjust your
               account details.
             </Text>
@@ -852,9 +852,9 @@ const AuthApp: React.FC = () => {
   const handleAuthError = React.useCallback(() => {
     clearSession();
     setSettingsFeedback({
-      type: "error",
-      title: "Session expired",
-      message: "Your session has expired. Please log in again.",
+      type: 'error',
+      title: 'Session expired',
+      message: 'Your session has expired. Please log in again.',
     });
   }, [clearSession]);
 
@@ -868,24 +868,33 @@ const AuthApp: React.FC = () => {
       try {
         const data = await apiRequest<UserInfo>(
           endpoints.userInfo,
-          "GET",
+          'GET',
           accessToken,
           undefined,
           handleAuthError
         );
         setUser(data);
       } catch (error) {
+        if (
+          error instanceof Error &&
+          (error.message.includes('token') ||
+            error.message.includes('expired') ||
+            error.message.includes('invalid'))
+        ) {
+          clearSession();
+          return;
+        }
         setSettingsFeedback({
-          type: "error",
-          title: "Profile",
+          type: 'error',
+          title: 'Profile',
           message:
-            error instanceof Error ? error.message : "Unable to load profile",
+            error instanceof Error ? error.message : 'Unable to load profile',
         });
       } finally {
         setLoadingUser(false);
       }
     },
-    [handleAuthError]
+    [handleAuthError, clearSession]
   );
 
   useEffect(() => {
@@ -923,7 +932,7 @@ const AuthApp: React.FC = () => {
     try {
       const data = await apiRequest<TokenPair>(
         endpoints.login,
-        "POST",
+        'POST',
         null,
         payload
       );
@@ -935,9 +944,9 @@ const AuthApp: React.FC = () => {
       await loadUserProfile(data.access);
     } catch (error) {
       setLoginFeedback({
-        type: "error",
-        title: "Unable to log in",
-        message: error instanceof Error ? error.message : "Login failed",
+        type: 'error',
+        title: 'Unable to log in',
+        message: error instanceof Error ? error.message : 'Login failed',
       });
     } finally {
       setLoginLoading(false);
@@ -954,7 +963,7 @@ const AuthApp: React.FC = () => {
     try {
       const data = await apiRequest<TokenPair>(
         endpoints.register,
-        "POST",
+        'POST',
         null,
         payload
       );
@@ -966,9 +975,9 @@ const AuthApp: React.FC = () => {
       await loadUserProfile(data.access);
     } catch (error) {
       setRegisterFeedback({
-        type: "error",
-        title: "Unable to register",
-        message: error instanceof Error ? error.message : "Registration failed",
+        type: 'error',
+        title: 'Unable to register',
+        message: error instanceof Error ? error.message : 'Registration failed',
       });
     } finally {
       setRegisterLoading(false);
@@ -981,9 +990,9 @@ const AuthApp: React.FC = () => {
   }) => {
     if (!tokens?.access) {
       setSettingsFeedback({
-        type: "error",
-        title: "Password update failed",
-        message: "Please log in again to manage your password.",
+        type: 'error',
+        title: 'Password update failed',
+        message: 'Please log in again to manage your password.',
       });
       return false;
     }
@@ -992,15 +1001,15 @@ const AuthApp: React.FC = () => {
     try {
       await apiRequest(
         endpoints.changePassword,
-        "POST",
+        'POST',
         tokens.access,
         payload,
         handleAuthError
       );
       setSettingsFeedback({
-        type: "success",
-        title: "Password updated",
-        message: "Your password has been changed. Reloading…",
+        type: 'success',
+        title: 'Password updated',
+        message: 'Your password has been changed. Reloading…',
       });
       window.setTimeout(() => {
         window.location.reload();
@@ -1008,10 +1017,10 @@ const AuthApp: React.FC = () => {
       return true;
     } catch (error) {
       setSettingsFeedback({
-        type: "error",
-        title: "Password update failed",
+        type: 'error',
+        title: 'Password update failed',
         message:
-          error instanceof Error ? error.message : "Unable to change password",
+          error instanceof Error ? error.message : 'Unable to change password',
       });
       return false;
     } finally {
@@ -1022,9 +1031,9 @@ const AuthApp: React.FC = () => {
   const handleEmailChange = async (payload: { new_email: string }) => {
     if (!tokens?.access) {
       setSettingsFeedback({
-        type: "error",
-        title: "Email update failed",
-        message: "Please log in again to manage your email address.",
+        type: 'error',
+        title: 'Email update failed',
+        message: 'Please log in again to manage your email address.',
       });
       return;
     }
@@ -1033,25 +1042,25 @@ const AuthApp: React.FC = () => {
     try {
       await apiRequest(
         endpoints.changeEmail,
-        "POST",
+        'POST',
         tokens.access,
         payload,
         handleAuthError
       );
       setSettingsFeedback({
-        type: "success",
-        title: "Email updated",
-        message: "Your email address has been changed. Reloading…",
+        type: 'success',
+        title: 'Email updated',
+        message: 'Your email address has been changed. Reloading…',
       });
       window.setTimeout(() => {
         window.location.reload();
       }, 150);
     } catch (error) {
       setSettingsFeedback({
-        type: "error",
-        title: "Email update failed",
+        type: 'error',
+        title: 'Email update failed',
         message:
-          error instanceof Error ? error.message : "Unable to change email",
+          error instanceof Error ? error.message : 'Unable to change email',
       });
     } finally {
       setEmailLoading(false);
@@ -1065,7 +1074,7 @@ const AuthApp: React.FC = () => {
       if (tokens?.access) {
         await apiRequest(
           endpoints.logout,
-          "POST",
+          'POST',
           tokens.access,
           {
             refresh: tokens.refresh,
@@ -1075,9 +1084,9 @@ const AuthApp: React.FC = () => {
       }
     } catch (error) {
       setSettingsFeedback({
-        type: "error",
-        title: "Logout failed",
-        message: error instanceof Error ? error.message : "Unable to log out",
+        type: 'error',
+        title: 'Logout failed',
+        message: error instanceof Error ? error.message : 'Unable to log out',
       });
     } finally {
       setLogoutLoading(false);
@@ -1120,7 +1129,7 @@ const AuthApp: React.FC = () => {
 };
 
 const mount = () => {
-  const rootEl = document.getElementById("sso-auth-root");
+  const rootEl = document.getElementById('sso-auth-root');
   if (!rootEl) {
     return;
   }
